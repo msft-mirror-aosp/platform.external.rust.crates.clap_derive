@@ -80,8 +80,8 @@ pub fn gen_for_enum(
             clippy::nursery,
             clippy::cargo,
             clippy::suspicious_else_formatting,
+            clippy::almost_swapped,
         )]
-        #[deny(clippy::correctness)]
         impl #impl_generics clap::FromArgMatches for #item_name #ty_generics #where_clause {
             fn from_arg_matches(__clap_arg_matches: &clap::ArgMatches) -> ::std::result::Result<Self, clap::Error> {
                 Self::from_arg_matches_mut(&mut __clap_arg_matches.clone())
@@ -106,8 +106,8 @@ pub fn gen_for_enum(
             clippy::nursery,
             clippy::cargo,
             clippy::suspicious_else_formatting,
+            clippy::almost_swapped,
         )]
-        #[deny(clippy::correctness)]
         impl #impl_generics clap::Subcommand for #item_name #ty_generics #where_clause {
             fn augment_subcommands <'b>(__clap_app: clap::Command) -> clap::Command {
                 #augmentation
@@ -244,16 +244,24 @@ fn gen_augment(
                     };
                     let initial_app_methods = item.initial_top_level_methods();
                     let final_from_attrs = item.final_top_level_methods();
+                    let override_methods = if override_required {
+                        quote_spanned! { kind.span()=>
+                            .subcommand_required(false)
+                            .arg_required_else_help(false)
+                        }
+                    } else {
+                        quote!()
+                    };
                     let subcommand = quote! {
                         let #app_var = #app_var.subcommand({
                             #deprecations;
                             let #subcommand_var = clap::Command::new(#name);
-                            let #subcommand_var = #subcommand_var #initial_app_methods;
-                            let #subcommand_var = #arg_block;
                             let #subcommand_var = #subcommand_var
                                 .subcommand_required(true)
                                 .arg_required_else_help(true);
-                            #subcommand_var #final_from_attrs
+                            let #subcommand_var = #subcommand_var #initial_app_methods;
+                            let #subcommand_var = #arg_block;
+                            #subcommand_var #final_from_attrs #override_methods
                         });
                     };
                     Some(subcommand)
