@@ -41,7 +41,7 @@ rust_proc_macro {
     name: "libclap_derive",
     crate_name: "clap_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "4.0.21",
+    cargo_pkg_version: "4.1.8",
     srcs: ["src/lib.rs"],
     edition: "2021",
     features: ["default"],
@@ -52,4 +52,6 @@ rust_proc_macro {
         "libquote",
         "libsyn",
     ],
+    product_available: true,
+    vendor_available: true,
 }
